@@ -36,7 +36,7 @@ const Home = () => {
 	return (
 		<>
 			<Head>
-				<title>Mazer</title>
+				<title key="title">Mazer</title>
 			</Head>
 			<form onSubmit={onSubmit}>
 				<input type="number" value={width} onChange={onWidthInputChange} />
