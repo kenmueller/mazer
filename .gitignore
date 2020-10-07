@@ -1,0 +1,6 @@
+**/*.DS_Store
+.firebase/
+*.log
+node_modules/
+.next/
+out/
