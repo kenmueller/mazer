@@ -1,13 +1,18 @@
+import { API_URL } from 'lib/constants'
+import IO from 'socket.io-client'
+
 import Cell from './Cell'
 
 const WALL_WIDTH = 10
 
 export default class Game {
+	private io: SocketIOClient.Socket
 	private context: CanvasRenderingContext2D
 	private rows: number
 	private columns: number
 	
 	constructor(private canvas: HTMLCanvasElement, private cells: Cell[][]) {
+		this.io = IO(API_URL)
 		this.context = canvas.getContext('2d')
 		this.rows = cells.length
 		this.columns = cells[0].length
