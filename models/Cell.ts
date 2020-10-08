@@ -1,6 +1,6 @@
 export default interface Cell {
 	up: boolean
 	right: boolean
-	bottom: boolean
+	down: boolean
 	left: boolean
 }

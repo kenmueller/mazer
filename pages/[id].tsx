@@ -1,34 +1,56 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
+import { toast } from 'react-toastify'
 
 import { API_URL } from 'lib/constants'
+import Game from 'models/Game'
 import Cell from 'models/Cell'
 
 const Room = () => {
-	const id = useRouter().query.id as string
+	const router = useRouter()
+	const id = router.query.id as string
 	
+	const canvas = useRef<HTMLCanvasElement | null>(null)
 	const [cells, setCells] = useState<Cell[][] | null>(null)
 	
 	useEffect(() => {
 		if (!id)
 			return
 		
-		fetch(`${API_URL}/games/${id}`)
-			.then(response => response.json())
+		const controller = new AbortController()
+		
+		fetch(`${API_URL}/games/${id}`, { signal: controller.signal })
+			.then(response => {
+				if (response.status === 404) {
+					toast.error('Invalid invite link')
+					router.replace('/')
+					
+					return null
+				}
+				
+				return response.json()
+			})
 			.then(setCells)
 			.catch(error => {
-				console.error(error)
+				console.error('ERROR:', error)
 				alert(error.message)
 			})
-	}, [id])
+		
+		return () => controller.abort()
+	}, [id, router])
+	
+	useEffect(() => {
+		if (canvas.current && cells)
+			return new Game(canvas.current, cells).start()
+	}, [canvas, cells])
 	
 	return (
 		<>
 			<Head>
 				<title key="title">Game Room - Mazer</title>
 			</Head>
-			{cells?.map((cell, i) => <p key={i}>{JSON.stringify(cell)}</p>)}
+			<canvas width="500px" height="500px" ref={canvas} />
 		</>
 	)
 }
