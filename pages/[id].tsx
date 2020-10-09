@@ -9,7 +9,7 @@ import Cell from 'models/Cell'
 
 const Room = () => {
 	const router = useRouter()
-	const id = router.query.id as string
+	const id = router.query.id as string | undefined
 	
 	const canvas = useRef<HTMLCanvasElement | null>(null)
 	const [cells, setCells] = useState<Cell[][] | null>(null)
@@ -41,9 +41,9 @@ const Room = () => {
 	}, [id, router])
 	
 	useEffect(() => {
-		if (canvas.current && cells)
-			return new Game(canvas.current, cells).start()
-	}, [canvas, cells])
+		if (canvas.current && id && cells)
+			return new Game(canvas.current, id, cells).start()
+	}, [canvas, id, cells])
 	
 	return (
 		<>

@@ -2,6 +2,7 @@ import { API_URL } from 'lib/constants'
 import IO from 'socket.io-client'
 
 import Cell from './Cell'
+import Player from './Player'
 
 const WALL_WIDTH = 10
 
@@ -11,7 +12,10 @@ export default class Game {
 	private rows: number
 	private columns: number
 	
-	constructor(private canvas: HTMLCanvasElement, private cells: Cell[][]) {
+	private playerId: string | null = null
+	private players: Record<string, Player> = {}
+	
+	constructor(private canvas: HTMLCanvasElement, private id: string, private cells: Cell[][]) {
 		this.io = IO(API_URL)
 		this.context = canvas.getContext('2d')
 		this.rows = cells.length
@@ -19,17 +23,41 @@ export default class Game {
 	}
 	
 	start = () => {
+		this.canvas.requestPointerLock()
+		
+		this.io.emit('game-id', this.id)
+		
+		this.io.on('id', (id: string) => {
+			this.playerId = id
+		})
+		
+		this.io.on('players', (players: Record<string, Player>) => {
+			this.players = players
+			this.update()
+		})
+		
+		return this.stop
+	}
+	
+	clear = () =>
+		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height)
+	
+	update = () => {
+		this.clear()
+		this.drawCells()
+	}
+	
+	stop = () => {
+		this.io.close()
+		document.exitPointerLock()
+	}
+	
+	private drawCells = () => {
 		this.context.fillStyle = 'black'
 		
 		for (let row = 0; row < this.rows; row++)
 			for (let column = 0; column < this.columns; column++)
 				this.drawCell(this.cells[row][column], row, column)
-		
-		return this.stop
-	}
-	
-	stop = () => {
-		
 	}
 	
 	private drawCell = (cell: Cell, row: number, column: number) => {
